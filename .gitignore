@@ -1,0 +1,5 @@
+src/__pycache__/metrics_calculator.cpython-312.pyc
+src/__pycache__/__init__.cpython-312.pyc
+src/__pycache__/analytics_engine.cpython-312.pyc
+*.pyc
+src/__pycache__/analytics_engine.cpython-312.pyc

@@ -36,12 +36,23 @@ def run_pipeline(pharmacies_path, claims_path, reverts_path):
         logging.warning("No valid claims found to process. Exiting.")
         return
 
-    # --- GOAL 2: Calculate core metrics ---
-    calculate_core_metrics(claims_df, reverts_df) # <-- Call the new function
+    # --- Phase 2: Calculate Core Metrics (Goal 2) ---
+    try:
+        logging.info("--- Phase 2: Calculating Core Metrics (Pandas) ---")
+        calculate_core_metrics(claims_df, reverts_df)
+        logging.info("--- Phase 2 Finished Successfully ---")
+    except Exception as e:
+        logging.error(f"Error during core metrics calculation (Phase 2): {e}", exc_info=True)
+        return
 
-    # --- GOALS 3 & 4 (Placeholder) ---
-
-    run_advanced_analytics(claims_df, pharmacies_df) # <-- Call the Spark function
+    # --- Phase 3: Advanced Analytics (Goals 3 & 4) ---
+    try:
+        logging.info("--- Phase 3: Running Advanced Analytics (Spark) ---")
+        run_advanced_analytics(claims_df, pharmacies_df)
+        logging.info("--- Phase 3 Finished Successfully ---")
+    except Exception as e:
+        logging.error(f"Error during advanced analytics (Phase 3): {e}", exc_info=True)
+        return
     
     logging.info("Pipeline finished successfully.")
     logging.info("Core metrics calculated. Ready for advanced analytics.")

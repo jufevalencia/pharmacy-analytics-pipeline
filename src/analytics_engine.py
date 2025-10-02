@@ -13,35 +13,50 @@ def run_advanced_analytics(claims_df: pd.DataFrame, pharmacies_df: pd.DataFrame)
     """
     logging.info("Starting advanced analytics with Spark...")
 
-    # 1. Initialize a local Spark Session using all available cores
-    spark = (
-        SparkSession.builder.appName("HealthTechAnalytics")
-        .master("local[*]") 
-        .config("spark.driver.memory", "4g") 
-        .getOrCreate()
-    )
+    try:
+        
+        # 1. Initialize a local Spark Session using all available cores
 
-    # Convert Pandas DataFrames to Spark DataFrames
-    claims_spark_df = spark.createDataFrame(claims_df)
-    pharmacies_spark_df = spark.createDataFrame(pharmacies_df)
+        spark = (
+            SparkSession.builder.appName("HealthTechAnalytics")
+            .master("local[*]") 
+            .config("spark.driver.memory", "4g") 
+            .getOrCreate()
+        )
 
-    # Filter for valid, non-reverted claims
-    valid_claims_df = claims_spark_df.filter(col("is_reverted") == False)
+        # Convert Pandas DataFrames to Spark DataFrames
+        claims_spark_df = spark.createDataFrame(claims_df)
+        pharmacies_spark_df = spark.createDataFrame(pharmacies_df)
+
+        # Filter for valid, non-reverted claims
+        valid_claims_df = claims_spark_df.filter(col("is_reverted") == False)
+
+        # Calculate unit price, handling zero quantity
+        claims_with_unit_price = valid_claims_df.withColumn(
+            "unit_price",
+            col("price") / (col("quantity") + 0.0001)
+        )
+
+        # --- Goal 3: Top 2 Chains per Drug ---
+        try:
+            logging.info("Calculating Goal 3: Top 2 Chains per Drug.")
+            calculate_top_chains(claims_with_unit_price, pharmacies_spark_df)
+        except Exception as e:
+            logging.error(f"Failed to calculate Top 2 Chains KPI: {e}", exc_info=True)
+
+        # --- Goal 4: Most Common Quantity per Drug ---
+        try:
+            logging.info("Calculating Goal 4: Most Common Quantity per Drug.")
+            calculate_most_common_quantity(valid_claims_df)
+        except Exception as e:
+            logging.error(f"Failed to calculate Most Common Quantity KPI: {e}", exc_info=True)
     
-    # Calculate unit price, handling zero quantity
-    claims_with_unit_price = valid_claims_df.withColumn(
-        "unit_price",
-        col("price") / (col("quantity") + 0.0001)
-    )
-
-    # --- Goal 3: Top 2 Chains per Drug ---
-    calculate_top_chains(claims_with_unit_price, pharmacies_spark_df)
-
-    # --- Goal 4: Most Common Quantity per Drug ---
-    calculate_most_common_quantity(valid_claims_df)
-    
-    spark.stop()
-    logging.info("Advanced analytics finished.")
+    finally:
+        # This block ensures that the Spark session is always stopped,
+        # even if an error occurs during processing.
+        if spark:
+            spark.stop()
+            logging.info("Advanced analytics finished and Spark session stopped.")
 
 
 def calculate_top_chains(claims_df, pharmacies_df):
