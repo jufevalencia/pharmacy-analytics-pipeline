@@ -57,10 +57,7 @@ This project reads data from the `data/` directory. **You must place the provide
 ### 3. Run the Pipeline
 Execute the main script from the project's root directory, providing the paths to the data folders as arguments.
 ```bash
-python main.py \
-    --pharmacies data/pharmacies/ \
-    --claims data/claims/ \
-    --reverts data/reverts/
+python main.py --pharmacies data/pharmacies/ --claims data/claims/ --reverts data/reverts/
 ```
 
 
