@@ -64,7 +64,7 @@ python main.py \
 ```
 
 
-###Expected Output
+### Expected Output
 The script will process the data and generate three JSON files inside the output/ directory, corresponding to the results of Goal 2, Goal 3, and Goal 4.
 
 
